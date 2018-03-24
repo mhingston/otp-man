@@ -123,15 +123,18 @@ export default {
         target = target.parentNode
       }
 
-      const otpCode = target.querySelector('.otpcode')
-      otpCode.select()
-      document.execCommand('copy')
-      window.getSelection().removeAllRanges()
-      this.$q.notify(
+      setTimeout(() =>
       {
-        type: 'positive',
-        message: 'OTP code copied to clipboard.'
-      })
+        const otpCode = target.querySelector('.otpcode')
+        otpCode.select()
+        document.execCommand('copy')
+        window.getSelection().removeAllRanges()
+        this.$q.notify(
+        {
+          type: 'positive',
+          message: 'OTP code copied to clipboard.'
+        })
+      }, 100)
     },
     addOTP (event)
     {
