@@ -21,6 +21,7 @@
               :value="entry.timeRemaining"
               readonly
             />
+            <q-btn @click.native="(event) => removeOTP(event, entry)" round color="secondary" icon="delete" />
           </q-item-side>
         </q-item>
       </q-list>
@@ -54,12 +55,36 @@ export default {
   name: 'PageIndex',
   data: () =>
   ({
-    addProps: (entry) =>
+    addProps (entry)
     {
       entry.min = 0,
       entry.max = parseInt(entry.period)
       entry.timeRemaining = null,
       entry.code = new Array(parseInt(entry.digits)).join('-')
+    },
+    save ()
+    {
+      try
+      {
+        const salt = this.$q.localStorage.get.item('salt')
+        const key = CryptoJS.PBKDF2(this.password, salt,
+        {
+          keySize: 512 / 32,
+          iterations: 1000
+        }).toString()
+
+        const cipherText = CryptoJS.AES.encrypt(JSON.stringify(this.otp), key).toString()
+        this.$q.localStorage.set('otp', cipherText)
+      }
+
+      catch(error)
+      {
+        this.$q.notify(
+        {
+          type: 'negative',
+          message: 'Unable to encrypt OTP codes.'
+        })
+      }
     },
     otp: [],
     password: null
@@ -123,20 +148,19 @@ export default {
         target = target.parentNode
       }
 
-      setTimeout(() =>
+      const otpCode = target.querySelector('.otpcode')
+      target.querySelector('.otpcode').value = otp.code
+      otpCode.select()
+      document.execCommand('copy')
+      otpCode.blur()
+      window.getSelection().removeAllRanges()
+      this.$q.notify(
       {
-        const otpCode = target.querySelector('.otpcode')
-        otpCode.select()
-        document.execCommand('copy')
-        window.getSelection().removeAllRanges()
-        this.$q.notify(
-        {
-          type: 'positive',
-          message: 'OTP code copied to clipboard.'
-        })
-      }, 100)
+        type: 'positive',
+        message: 'OTP code copied to clipboard.'
+      })
     },
-    addOTP (event)
+    addOTP(event)
     {
       const file = event.target && event.target.files ? event.target.files[0] : null
 
@@ -165,29 +189,9 @@ export default {
               let otp = queryString.parse(matches[3])
               otp = Object.assign(otp, {type, label})
               this.addProps(otp)
+              otp.id = this.otp.length
               this.otp.push(otp)
-
-              try
-              {
-                const salt = this.$q.localStorage.get.item('salt')
-                const key = CryptoJS.PBKDF2(this.password, salt,
-                {
-                  keySize: 512 / 32,
-                  iterations: 1000
-                }).toString()
-
-                const cipherText = CryptoJS.AES.encrypt(JSON.stringify(this.otp), key).toString()
-                this.$q.localStorage.set('otp', cipherText)
-              }
-
-              catch(error)
-              {
-                this.$q.notify(
-                {
-                  type: 'negative',
-                  message: 'Unable to encrypt OTP codes.'
-                })
-              }
+              this.save()
             }
           }
           img.src = reader.result
@@ -195,6 +199,20 @@ export default {
 
         reader.readAsDataURL(file)
       }
+    },
+    removeOTP(event, otp)
+    {
+      for(let i=0; i < this.otp.length; i++)
+      {
+        if(this.otp[i].id === otp.id)
+        {
+          this.otp.splice(i, 1)
+          break
+        }
+      }
+
+      this.save()
+      event.stopPropagation()
     }
   },
   mounted: async function()
