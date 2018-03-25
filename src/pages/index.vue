@@ -59,9 +59,9 @@ export default {
     addProps (entry)
     {
       entry.min = 0,
-      entry.max = parseInt(entry.period)
+      entry.max = isNaN(parseInt(entry.period)) ? 30 : parseInt(entry.period)
       entry.timeRemaining = null,
-      entry.code = new Array(parseInt(entry.digits)).join('-')
+      entry.code = isNaN(parseInt(entry.digits)) ? '------' : new Array(parseInt(entry.digits)).join('-')
     },
     save ()
     {
