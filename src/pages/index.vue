@@ -234,6 +234,7 @@ export default {
     {
       const salt = CryptoJS.lib.WordArray.random(128 / 8).toString()
       this.$q.localStorage.set('salt', salt)
+      this.password = password
       return
     }
 
