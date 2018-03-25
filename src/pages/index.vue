@@ -189,7 +189,7 @@ export default {
               let otp = queryString.parse(matches[3])
               otp = Object.assign(otp, {type, label})
               this.addProps(otp)
-              otp.id = this.otp.length
+              otp.id = this.otp.length ? 0 : this.otp[this.otp.length-1].id+1
               this.otp.push(otp)
               this.save()
             }
