@@ -32,6 +32,7 @@
           @click="selectFile"
           icon="add"
           class="q-btn-fab"
+          :disabled="password === null"
         >
           <q-tooltip
             anchor="center right"
@@ -229,8 +230,6 @@ export default {
       preventClose: true
     })
 
-    this.password = password
-
     if(!existingData)
     {
       const salt = CryptoJS.lib.WordArray.random(128 / 8).toString()
@@ -252,6 +251,7 @@ export default {
       const otp = JSON.parse(plainText)
       otp.forEach(this.addProps)
       this.otp = otp
+      this.password = password
     }
 
     catch(error)
